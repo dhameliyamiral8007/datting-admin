@@ -1,13 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { api } from "@/lib/admin-api";
+import { api, getBaseUrl, getToken } from "@/lib/admin-api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { ArrowLeft, User as UserIcon, Mail, Phone, MapPin, Calendar, Activity, Bot } from "lucide-react";
-
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, User as UserIcon, Mail, Phone, MapPin, Calendar, Activity, Bot, Pencil, Plus, Trash2, Upload } from "lucide-react";
 export const Route = createFileRoute("/admin/ai-users/$userId")({
   component: AIUserDetails,
 });
@@ -19,7 +21,7 @@ function AIUserDetails() {
 
   function load() {
     setLoading(true);
-    api<any>(`/admin/users/ai/${userId}`)
+    api<any>(`/admin/users/${userId}`)
       .then((r) => setUser(r?.data ?? r))
       .catch((e) => toast.error(e.message))
       .finally(() => setLoading(false));
@@ -36,7 +38,10 @@ function AIUserDetails() {
 
       <div className="grid grid-cols-1 gap-6">
         <Card>
-          <CardHeader><CardTitle>Profile</CardTitle></CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Profile</CardTitle>
+            {user && <EditAIUserDialog user={user} onUpdate={load} />}
+          </CardHeader>
           <CardContent>
             {loading ? <div className="text-muted-foreground text-sm">Loading...</div> :
               <ProfileDetail user={user} />}
@@ -240,5 +245,184 @@ function ProfileDetail({ user }: { user: any }) {
         <span>Last Active: {safeDateTime(u.lastActiveAt || u.lastSeen)}</span>
       </div>
     </div>
+  );
+}
+
+function EditAIUserDialog({ user, onUpdate }: { user: any; onUpdate: () => void }) {
+  const u = user?.user || (Array.isArray(user?.users) ? user.users[0] : user);
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  
+  const [name, setName] = useState(u?.name || "");
+  const [dob, setDob] = useState(u?.dob ? new Date(u.dob).toISOString().split('T')[0] : "");
+  const [photos, setPhotos] = useState<any[]>(u?.photos || []);
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setName(u?.name || "");
+      setDob(u?.dob ? new Date(u.dob).toISOString().split('T')[0] : "");
+      setPhotos(u?.photos || []);
+    }
+  }, [open, u]);
+
+  const handleAddPhoto = () => {
+    setPhotos([...photos, { url: "", thumbnailUrl: "", order: photos.length, uploadedAt: new Date().toISOString() }]);
+  };
+
+  const handleRemovePhoto = (index: number) => {
+    const newPhotos = [...photos];
+    newPhotos.splice(index, 1);
+    setPhotos(newPhotos);
+  };
+
+  const handlePhotoChange = (index: number, field: string, value: string) => {
+    const newPhotos = [...photos];
+    newPhotos[index] = { ...newPhotos[index], [field]: value };
+    setPhotos(newPhotos);
+  };
+
+  const handleFileUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("photo", file);
+    formData.append("folder", "profiles");
+
+    try {
+      const res = await fetch(`${getBaseUrl()}/upload/photo`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${getToken()}`
+        },
+        body: formData
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || data.error || "Upload failed");
+      
+      const newPhotos = [...photos];
+      const uploadedUrl = data.url || data.data?.url || (data.data && typeof data.data === 'string' ? data.data : data);
+      const finalUrl = typeof uploadedUrl === 'string' ? uploadedUrl : uploadedUrl.url || "";
+      newPhotos[index] = { 
+        ...newPhotos[index], 
+        url: finalUrl, 
+        thumbnailUrl: finalUrl // Use same URL as thumbnail if not provided separately
+      };
+      setPhotos(newPhotos);
+      toast.success("Photo uploaded successfully");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to upload photo");
+    } finally {
+      setUploading(false);
+      // Reset the file input so the same file can be selected again if needed
+      e.target.value = '';
+    }
+  };
+
+  const handleSave = () => {
+    setSaving(true);
+    const payload = {
+      name,
+      dob,
+      photos
+    };
+
+    api(`/admin/users/ai/${u._id || u.id}`, {
+      method: "PATCH",
+      body: payload
+    })
+      .then(() => {
+        toast.success("AI user updated successfully");
+        setOpen(false);
+        onUpdate();
+      })
+      .catch((e: any) => {
+        toast.error(e.message || "Failed to update user");
+      })
+      .finally(() => setSaving(false));
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Pencil className="w-4 h-4 mr-2" />
+          Edit Profile
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Edit AI User Profile</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Name</Label>
+            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="dob">Date of Birth</Label>
+            <Input id="dob" type="date" value={dob} onChange={(e) => setDob(e.target.value)} />
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label>Photos</Label>
+              <Button type="button" variant="outline" size="sm" onClick={handleAddPhoto}>
+                <Plus className="w-4 h-4 mr-1" /> Add Photo
+              </Button>
+            </div>
+            
+            {photos.length === 0 ? (
+              <div className="text-sm text-muted-foreground text-center py-4 border rounded-md border-dashed">No photos added</div>
+            ) : (
+              <div className="space-y-3">
+                {photos.map((photo, i) => (
+                  <div key={i} className="flex gap-2 items-start border p-3 rounded-md">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex gap-2">
+                        <Input 
+                          placeholder="Photo URL" 
+                          value={photo.url || ""} 
+                          onChange={(e) => handlePhotoChange(i, 'url', e.target.value)} 
+                          className="text-sm"
+                        />
+                        <div className="relative flex-shrink-0">
+                          <Input 
+                            type="file" 
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                            onChange={(e) => handleFileUpload(i, e)} 
+                            accept="image/*"
+                            disabled={uploading}
+                          />
+                          <Button type="button" variant="secondary" size="icon" disabled={uploading}>
+                            <Upload className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <Input 
+                        placeholder="Thumbnail URL (Optional)" 
+                        value={photo.thumbnailUrl || ""} 
+                        onChange={(e) => handlePhotoChange(i, 'thumbnailUrl', e.target.value)} 
+                        className="text-sm"
+                      />
+                    </div>
+                    <Button type="button" variant="destructive" size="icon" onClick={() => handleRemovePhoto(i)}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>Cancel</Button>
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? "Saving..." : "Save Changes"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
