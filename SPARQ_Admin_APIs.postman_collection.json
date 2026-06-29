@@ -1,0 +1,699 @@
+{
+  "info": {
+    "_postman_id": "e5c354d6-cbad-43f4-9c34-079727a38020",
+    "name": "SPARQ Admin APIs",
+    "description": "Collection of administrative endpoints for the SPARQ Dating App Backend including authentication, user management, and notifications.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Super Admin\",\n  \"email\": \"admin@sparq.com\",\n  \"password\": \"AdminSecurePassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseJson = pm.response.json();",
+                  "const token = responseJson.accessToken || (responseJson.data && responseJson.data.accessToken);",
+                  "if (token) {",
+                  "    pm.environment.set(\"adminToken\", token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@sparq.com\",\n  \"password\": \"AdminSecurePassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login with Google",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"eyJhbGciOiJSUzI1NiIsImtpZCI6ImQxMjk3OGJhNGMyOWVmMTE1NGEzNGU0ODcwYzdhM2E1MWQyNmRmMTAiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI1MzY2MDY2NzY5MzMtbXYwc2gyMzJhZmdmaGo5czFkazZ2bWcwMWZlaWF0ZWQuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI1MzY2MDY2NzY5MzMtbWtpaDFna2FlbHI4N2Y1Zm5ydmUyMWVtdTFycTNvZGMuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDEzMTk4ODY4MDAxODc0NTQ3MzkiLCJlbWFpbCI6ImthdGhpcml5YXNhaGlsNjAyMkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6InNhaGlsIGthdGhpcml5YSIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NLaV9YSnlsaGRjYVlmVEVBTy05RGt5QnhSczh5TnB1WHVCVmN5ZXhyd0RsbzJJcnc9czk2LWMiLCJnaXZlbl9uYW1lIjoic2FoaWwiLCJmYW1pbHlfbmFtZSI6ImthdGhpcml5YSIsImlhdCI6MTc4MjU1MjY4OSwiZXhwIjoxNzgyNTU2Mjg5fQ.espVvIaFRyOxJvS38Er26wWofkZ_Qz98Oh7IO0CdW8OMwC7w-eUre3cH5gWTcrkCW2JJsFZ9yQVbIs2KrhEeZOaakRWS9unMigZfEKZb84EoXpaLlgvxsDAU2ADSGuKUCLiW2ixLX49emR0e0N1i5yrAGeSNPoD5d9WAiFFLUUL0idxT_glLe5lCts2VqaTMOGUzAjfq7Wpmv84CyZ7MS_saIe1W2TOlRtiIfQoFooKLpf3Rr_2wgFAvyuEt1Zm1XuT6nOxZ2Ya_YXfokx-T_X9M--Ftfd9oWtrsoZzwyXM2ewuJ6ezey9UuVbMWiuo4L3ehhW9A0u3Aw_qE_D5Hqw\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/google",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "google"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Dashboard & User Management",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "dashboard"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Block User Permanently",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/:userId/block",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                ":userId",
+                "block"
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "user_id_here"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Suspend User Temporarily",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Suspend a user temporarily. You can specify durationDays or suspendedUntil in the body.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"durationDays\": 7\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/:userId/suspend",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                ":userId",
+                "suspend"
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "user_id_here"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unblock / Unsuspend User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/:userId/unblock",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                ":userId",
+                "unblock"
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "user_id_here"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Real Users List (Not AI)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Real User Details (Not AI)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/:userId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                ":userId"
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "user_id_here"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Notification Templates",
+      "item": [
+        {
+          "name": "Create Notification Template",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"welcome_offer\",\n  \"message\": \"Get 50% off on premium subscriptions today only!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/notifications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "notifications"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Notification Templates",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/notifications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "notifications"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Distinct Notification Types",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/notifications/types",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "notifications",
+                "types"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Notification Template By ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/notifications/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "notifications",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "template_id_here"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Notification Template",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Get 60% off on premium subscriptions today only!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/notifications/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "notifications",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "template_id_here"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Notification Template",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/notifications/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "notifications",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "template_id_here"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Send Targeted Notification",
+      "item": [
+        {
+          "name": "Send Notification to User (Template)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"6a1981cde16bfd05fbbad1ca\",\n  \"notificationType\": \"welcome_offer\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/send-notification",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "send-notification"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Notification to User (Custom Message)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"target_user_id_here\",\n  \"notificationType\": \"other\",\n  \"message\": \"This is a custom warning message from the admin.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/send-notification",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "send-notification"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Discover Feed",
+      "item": [
+        {
+          "name": "Get Discover Feed",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/discover/feed?page=1&limit=20&lat=21.2343964&lng=72.8769077",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "discover",
+                "feed"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "lat",
+                  "value": "21.2343964"
+                },
+                {
+                  "key": "lng",
+                  "value": "72.8769077"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://143.244.139.153:12500",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userToken",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTE5OTQyNzJlMzM1OGJhZWI3ZmEwMjMiLCJpc1ByZW1pdW0iOmZhbHNlLCJpc1BsYXRpbnVtIjpmYWxzZSwiaWF0IjoxNzgyNTQ5ODgyLCJleHAiOjE3ODI1NTA3ODJ9.T-Y9G4l90vvUm5zcdgFGhZt_a2mkswByn4L-sV2XiZQ",
+      "type": "string"
+    }
+  ]
+}
